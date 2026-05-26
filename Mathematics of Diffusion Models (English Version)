@@ -15,7 +15,7 @@ x_1
 \sqrt{\beta_1}\epsilon_1
 ```
 
-其中$`\epsilon_1`$是噪声值，采样于标准高斯变量$`\varepsilon\sim\mathcal N(0,1)`$，$`\beta_1`$是人为设定的第1步加噪的噪声强度，一般要求$`0<\beta<1`$。写成随机变量形式则有
+Here, $`\epsilon_1`$ is the noise value, sampled from a standard Gaussian random variable $`\varepsilon\sim\mathcal N(0,1)`$. The parameter $`\beta_1`$ is the manually chosen noise strength for the first noising step, usually satisfying $`0<\beta<1`$. Written in random-variable form, we have:
 
 ```math
 X_1
@@ -143,7 +143,7 @@ X_t
 \end{aligned}
 ```
 
-可以看出，在给定$`X_0=x_0`$的条件下，随机变量$`X_t`$等价于由多个互相独立的高斯随机变量$`\varepsilon_1,\varepsilon_2,\cdots,\varepsilon_t`$表示的线性组合。因为独立高斯分布的线性组合依然是高斯分布，因此在给定$`X_0=x_0`$的条件下，$`X_t`$仍然服从高斯分布。对于任意两个随机变量X和Y，有$`\mathrm{Var}(X + Y) = \mathrm{Var}(X) + \mathrm{Var}(Y) + 2\mathrm{Cov}(X, Y)`$，则对任意$`i\neq j`$都有$`\mathrm{Var}(\varepsilon_i + \varepsilon_j) = \mathrm{Var}(\varepsilon_i) + \mathrm{Var}(\varepsilon_j) + 2\mathrm{Cov}(\varepsilon_i, \varepsilon_j)=\mathrm{Var}(\varepsilon_i) + \mathrm{Var}(\varepsilon_j)`$。则有
+We can see that, conditioned on $`X_0=x_0`$, the random variable $`X_t`$ is equivalent to a linear combination of several mutually independent Gaussian random variables $`\varepsilon_1,\varepsilon_2,\cdots,\varepsilon_t`$. Since a linear combination of independent Gaussian variables is still Gaussian, $`X_t`$ also follows a Gaussian distribution conditioned on $`X_0=x_0`$. For any two random variables X and Y, $`\mathrm{Var}(X + Y) = \mathrm{Var}(X) + \mathrm{Var}(Y) + 2\mathrm{Cov}(X, Y)`$. Therefore, for any $`i\neq j`$, $`\mathrm{Var}(\varepsilon_i + \varepsilon_j) = \mathrm{Var}(\varepsilon_i) + \mathrm{Var}(\varepsilon_j) + 2\mathrm{Cov}(\varepsilon_i, \varepsilon_j)=\mathrm{Var}(\varepsilon_i) + \mathrm{Var}(\varepsilon_j)`$. Thus:
 
 ```math
 \begin{aligned}
@@ -246,7 +246,7 @@ X_t= \sqrt{\bar\alpha_t}x_0
 \sqrt{1-\bar\alpha_t}\bar\varepsilon_t,\quad \bar\varepsilon_t\sim \mathcal  N(0,1)
 ```
 
-其中$`\bar\varepsilon_t`$用于和递推式中的局部噪声$`\varepsilon_t`$做区分，两个随机变量虽然都服从标准正态分布，但两者是不同的随机变量，两者的关系为
+Here, $`\bar\varepsilon_t`$ is used to distinguish it from the local noise $`\varepsilon_t`$ in the recursive formula. Although both random variables follow a standard normal distribution, they are different random variables. Their relationship is:
 
 ```math
 \sqrt{1-\bar\alpha_t}\bar\varepsilon_t=\sum_{i=1}^{t}
@@ -259,10 +259,10 @@ X_t= \sqrt{\bar\alpha_t}x_0
 
 The conditional probability density function is:
 $`q_t(x_t\mid x_0)=\mathcal{N}(x_t;\sqrt{\bar \alpha_t}x_{0},(1-\bar \alpha_t))`$
-直接采样等价于一步步采样的本质含义不是说直接采样得到$`x_t`$和一步步采样得到$`x_t`$在值上相同，而是说在经过无穷次采样后，两种方式采样得到的$`x_t`$形成的分布相同。当我们选择合适的$`\beta`$序列使得$`\lim_{t\to\infty}\bar \alpha_t=\prod_{i=1}^t \alpha_i=\prod_{i=1}^t (1-\beta_i)=0`$时，则当T足够大时，就有
-$`q_T(x_T\mid x_0)\approx\mathcal{N}(x_T;0,1)`$。 
+The essential meaning of direct sampling being equivalent to step-by-step sampling is not that the value of $`x_t`$ obtained by direct sampling is exactly the same as the value obtained by step-by-step sampling. Rather, after infinitely many samples, the distributions formed by $`x_t`$ from the two sampling methods are the same. When we choose an appropriate $`\beta`$ sequence such that $`\lim_{t\to\infty}\bar \alpha_t=\prod_{i=1}^t \alpha_i=\prod_{i=1}^t (1-\beta_i)=0`$, then when T is sufficiently large, we have:
+$`q_T(x_T\mid x_0)\approx\mathcal{N}(x_T;0,1)`$.
 Generation process
-当给定$`x_0`$后，后续所有时刻结果的随机变量$`X_1,X_2,\cdots,X_T`$的解析式都可以直接写出。如果我们可以构造一个神经网络$`\theta`$去学习根据$`x_t`$和$`t`$输出分布$`\mathcal L(X_{t-1}\mid x_t)`$，那么我们就可以根据这个分布逆转加噪过程。重复这个逆转过程最终就可以得到$`X_0`$的分布（训练所用的$`x_0`$的数据分布）。这里可能产生疑问：从$`x_t`$到$`x_0`$，这中间$`x_{t-1}`$依赖于$`x_t`$，整个路径都是随机的，我怎么能确保$`x_T`$生成确定的$`x_0`$呢？实际上，现在要介绍的生成过程还没有生成图片的能力，只有生成分布的能力，也就是说无法从$`x_T`$生成确定的$`x_0`$，但可以训练达到从$`x_T`$生成一批$`x_0`$，这批$`x_0`$的分布符合训练时候所使用的$`x_0`$的数据分布。介绍一下联合概率密度：对于两个连续的随机变量X,Y，当两随机变量互相独立时，他们的联合概率密度函数为
+Once $`x_0`$ is given, the analytical expressions for all later random variables $`X_1,X_2,\cdots,X_T`$ can be written directly. If we can construct a neural network $`\theta`$ to learn a distribution $`\mathcal L(X_{t-1}\mid x_t)`$ from $`x_t`$ and $`t`$, then we can use this distribution to reverse the noising process. By repeating this reverse process, we can eventually obtain the distribution of $`X_0`$, which is the data distribution of the training samples $`x_0`$. A natural question may arise: from $`x_t`$ to $`x_0`$, the intermediate $`x_{t-1}`$ depends on $`x_t`$, and the whole path is random. How can we ensure that $`x_T`$ generates a deterministic $`x_0`$? In fact, the generation process introduced here does not generate a fixed image deterministically; it generates a distribution. That is, we cannot recover a specific deterministic $`x_0`$ from $`x_T`$, but we can train the model so that samples generated from $`x_T`$ follow the same distribution as the training data $`x_0`$. Before continuing, let us briefly introduce joint probability densities. For two continuous random variables X and Y, if they are independent, their joint probability density is:
 $`f_{X,Y}(x,y)=f_X(x)\cdot f_Y(y)`$
 When the two random variables are not independent, their joint probability density function is:
 $`f_{X,Y}(x,y)=f_X(x)\cdot f_{Y\mid X}(y\mid x)=f_Y(y)\cdot f_{X\mid Y}(x\mid y)`$
@@ -928,7 +928,7 @@ q_{t-1}(X_{t-1} \mid x_0)
 \end{gathered}
 ```
 
-因为$`1>\beta_t>0,1>\bar\alpha_t>0`$则有
+Because $`1>\beta_t>0`$ and $`1>\bar\alpha_t>0`$, we have:
 
 ```math
 \begin{aligned}
@@ -1035,7 +1035,7 @@ X_{t-1}-\tilde\mu_t(X_t,x_0)
 \end{aligned}
 ```
 
-这里之所以写$`\tilde\beta_t`$而不写$`\tilde\beta_t(X_t,x_0)`$，是因为后面推导会知道$`\tilde\beta_t`$是一个和条件$`x_0,X_t`$无关的常数。这里省略掉自变量只是为了简洁，不过写作$`\tilde\beta_t(X_t,x_0)`$也不影响推导结果。将指数部分展开得到
+The reason we write $`\tilde\beta_t`$ instead of $`\tilde\beta_t(X_t,x_0)`$ is that the following derivation will show that $`\tilde\beta_t`$ is a constant independent of the conditions $`x_0,X_t`$. Omitting the arguments here is only for simplicity; writing $`\tilde\beta_t(X_t,x_0)`$ would not affect the derivation. Expanding the exponent gives:
 
 ```math
 -\frac{
@@ -1054,7 +1054,7 @@ X_{t-1}-\tilde\mu_t(X_t,x_0)
 \mathrm{const}
 ```
 
-这里$`\tilde\beta_t`$和前向过程中人为设定的$`\beta`$不同，这里的$`\tilde\beta_t`$表示$`X_{t-1}\mid X_t,x_0`$的方差。对比系数有
+Here, $`\tilde\beta_t`$ is different from the manually specified $`\beta`$ in the forward process. This $`\tilde\beta_t`$ denotes the variance of $`X_{t-1}\mid X_t,x_0`$. Comparing coefficients gives:
 
 ```math
 \begin{aligned}
@@ -1090,7 +1090,7 @@ Therefore:
 \beta_t
 ```
 
-可以看到，$`\tilde\beta_t`$是一个和条件$`x_0,X_t`$无关的常数。再次对比系数有
+We can see that $`\tilde\beta_t`$ is a constant independent of the conditions $`x_0,X_t`$. Comparing coefficients again gives:
 
 ```math
 \begin{aligned}
@@ -1111,7 +1111,7 @@ Therefore:
 \end{aligned}
 ```
 
-将$`\bar\beta_t`$代入得到
+Substituting $`\tilde\beta_t`$ gives:
 
 ```math
 \begin{aligned}
@@ -1203,7 +1203,7 @@ X_t-\sqrt{1-\bar\alpha_t}\varepsilon_t
 }
 ```
 
-这里可能会让人产生疑问：为什么两个随机变量的运算最终得到了一个常数$`x_0`$？其实这是因为$`X_t`$和$`\varepsilon_t`$并不是两个独立的随机变量，$`X_t`$是由$`x_0`$和$`\varepsilon_t`$构造而成的随机变量，因此在$`X_t`$和$`\varepsilon_t`$的运算过程中，随机的部分被抵消掉了，只剩下了常数。代入$`\tilde\mu_t`$得到
+This may raise a question: why does an operation involving two random variables eventually produce a constant $`x_0`$? The reason is that $`X_t`$ and $`\varepsilon_t`$ are not independent random variables. $`X_t`$ is constructed from $`x_0`$ and $`\varepsilon_t`$, so during the operation between $`X_t`$ and $`\varepsilon_t`$, the random parts cancel out, leaving only the constant. Substituting this into $`\tilde\mu_t`$ gives:
 
 ```math
 \begin{aligned}
@@ -1256,7 +1256,7 @@ X_t
 \end{aligned}
 ```
 
- 在训练时，我们知道$`x_0`$和采样噪声$`\varepsilon_t`$，因此可以计算真实后验$`q_{t-1}(X_{t-1}\mid X_t,x_0)`$；但在生成时，我们只有$`X_t`$（通过$`X_T`$可以确定$`X_{T-1}`$，以此类推最后可以得到$`X_0`$），没有$`x_0`$，也不知道真实噪声$`\varepsilon_t`$。因此需要用神经网络定义的$`p_{t-1}(X_{t-1}\mid X_t)`$去拟合训练时可计算的真实后验$`q_{t-1}(x_{t-1}\mid X_t,x_0)`$。 而这个拟合过程我们唯一所需要知道的就是$`\varepsilon_t`$了，因此只需要让神经网络$`\theta`$学习噪声$`\varepsilon_\theta(X_t,t)`$即可，于是我们可以得到
+During training, we know $`x_0`$ and the sampled noise $`\varepsilon_t`$, so we can compute the true posterior $`q_{t-1}(X_{t-1}\mid X_t,x_0)`$. During generation, however, we only have $`X_t`$; by using $`X_T`$, one can determine $`X_{T-1}`$, and so on until finally obtaining $`X_0`$. We do not have $`x_0`$, and we do not know the true noise $`\varepsilon_t`$. Therefore, we need to use the neural-network-defined distribution $`p_{t-1}(X_{t-1}\mid X_t)`$ to approximate the true posterior $`q_{t-1}(x_{t-1}\mid X_t,x_0)`$ that can be computed during training. In this fitting process, the only quantity we need to know is $`\varepsilon_t`$, so we only need the neural network $`\theta`$ to learn the noise $`\varepsilon_\theta(X_t,t)`$. Thus, we obtain:
 
 ```math
 \begin{aligned}
@@ -1375,7 +1375,7 @@ where:
 \end{aligned}
 ```
 
-因此
+Therefore:
 
 ```math
 \left(
@@ -1452,7 +1452,7 @@ C_t ,\quad C_t
 \end{aligned}
 ```
 
-因为$`X_t`$由$`\varepsilon_t`$和$`x_0`$决定，因此期望下标写明了对$`\varepsilon_t`$求期望，就不需要再写$`X_t\sim Q_t(\cdot\mid x_0)`$了。在优化过程中常数可以省略，于是$`L_{t-1}`$等价于
+Because $`X_t`$ is determined by $`\varepsilon_t`$ and $`x_0`$, once the expectation is explicitly taken over $`\varepsilon_t`$, we no longer need to write $`X_t\sim Q_t(\cdot\mid x_0)`$ separately. During optimization, constants can be omitted, so $`L_{t-1}`$ is equivalent to:
 
 ```math
 L_{t-1}'=\mathbb E_{\varepsilon_t\sim\mathcal N(0,1)}
@@ -1468,7 +1468,7 @@ L_{t-1}'=\mathbb E_{\varepsilon_t\sim\mathcal N(0,1)}
 \right]
 ```
 
-将$`X_t= \sqrt{\bar\alpha_t}x_0+\sqrt{1-\bar\alpha_t}\varepsilon_t`$代入得到
+Substituting $`X_t= \sqrt{\bar\alpha_t}x_0+\sqrt{1-\bar\alpha_t}\varepsilon_t`$ gives:
 
 ```math
 L_{t-1}'=\mathbb E_{\varepsilon_t\sim\mathcal N(0,1)}
@@ -1615,7 +1615,7 @@ L_0(x_0)
 \end{aligned}
 ```
 
-其中，在机器学习或数学领域， $`\log`$都默认指以$`e`$为底数的$`\log`$函数，所以才有$`\log\exp\!\left( -\frac{(x_0-\mu_\theta(X_1,1))^2}{2\sigma_1^2} \right)=\! -\frac{(x_0-\mu_\theta(X_1,1))^2}{2\sigma_1^2}`$。优化过程中可以忽略常数，则$`L_0`$等价于
+In machine learning and mathematics, $`\log`$ usually denotes the natural logarithm with base $`e`$. Therefore, $`\log\exp\!\left( -\frac{(x_0-\mu_\theta(X_1,1))^2}{2\sigma_1^2} \right)=\! -\frac{(x_0-\mu_\theta(X_1,1))^2}{2\sigma_1^2}`$. During optimization, constants can be ignored, so $`L_0`$ is equivalent to:
 
 ```math
 \begin{aligned}
@@ -1672,7 +1672,7 @@ L_{\mathrm{simple}}
 \right]
 ```
 
-加入一个常数$`\frac{1}{T}`$不影响优化
+Multiplying by the constant $`\frac{1}{T}`$ does not affect the optimization:
 
 ```math
 \begin{aligned}
@@ -1707,7 +1707,7 @@ L_{\mathrm{simple}}
 \end{aligned}
 ```
 
-其中$`\text{Uniform}(\{1,\cdots,T\})`$表示均匀分布。 当训练集中只有$`x_0`$时，训练数据分布为$`\mathcal N(x_0,0)`$。我们随机采样$`t、\epsilon`$，计算得到
+Here, $`\text{Uniform}(\{1,\cdots,T\})`$ denotes the uniform distribution. When the training set contains only $`x_0`$, the training data distribution is $`\mathcal N(x_0,0)`$. We randomly sample $`t`$ and $`\epsilon`$, and compute:
 
 ```math
 x_t=\sqrt{\bar\alpha_t}x_0
@@ -1715,7 +1715,7 @@ x_t=\sqrt{\bar\alpha_t}x_0
 \sqrt{1-\bar\alpha_t}\epsilon
 ```
 
-，将$`x_t,t`$输入神经网络$`\theta`$得到输出$`\epsilon_\theta`$，此时我们就具备了进行随机梯度下降所需的所有数据，重复这个过程，直到训练结束。在生成阶段，输入$`x_t,t`$给神经网络$`\theta`$，得到输出$`\epsilon_\theta`$，接着由
+Then we feed $`x_t,t`$ into the neural network $`\theta`$ and obtain the output $`\epsilon_\theta`$. At this point, we have all the data needed for stochastic gradient descent. We repeat this process until training ends. During generation, we feed $`x_t,t`$ into the neural network $`\theta`$ and obtain $`\epsilon_\theta`$. Then, using:
 
 ```math
 \mu_\theta(x_t,t)=\frac{1}{\sqrt{\alpha_t}}
@@ -1727,14 +1727,14 @@ x_t
 \right)
 ```
 
-可以计算得到$`\mu_\theta`$，最后根据
+we can compute $`\mu_\theta`$. Finally, according to:
 
 ```math
 p_{t-1}(x_{t-1}\mid x_t)=\mathcal{N}\left( x_{t-1};
 \mu_\theta(x_t,t), \sigma^2_t\right)
 ```
 
-可以得到生成$`x_{t-1}`$的分布，重复这个过程，最终可以得到生成$`x_0`$的分布。由于$`x_0`$的分布是$`\mathcal N(x_0,0)`$，因此由神经网络给出的生成$`x_0`$的分布也大概会是$`\mathcal N(x_0,0)`$。假如现在有一张64*64*3的图片，将其展平为$`x_0\in \mathbb R^{64*64*3}`$，同时将$`\varepsilon`$也扩展为$`\varepsilon\in \mathbb R^{64*64*3}`$，则损失函数就变为了
+we obtain the distribution for generating $`x_{t-1}`$. Repeating this process eventually gives the distribution of the generated $`x_0`$. Since the distribution of $`x_0`$ is $`\mathcal N(x_0,0)`$, the distribution of the generated $`x_0`$ given by the neural network will also be approximately $`\mathcal N(x_0,0)`$. Suppose now we have a $`64*64*3`$ image and flatten it into $`x_0\in \mathbb R^{64*64*3}`$. We also extend $`\varepsilon`$ to $`\varepsilon\in \mathbb R^{64*64*3}`$. Then the loss function becomes:
 
 ```math
 L_{\mathrm{simple}}=\mathbb E_{\varepsilon\sim \mathcal N(0,\mathbf I),t\sim \text{Uniform}(\{1,\cdots,T\})}
@@ -1748,349 +1748,3 @@ L_{\mathrm{simple}}=\mathbb E_{\varepsilon\sim \mathcal N(0,\mathbf I),t\sim \te
 ```
 
 By optimizing this loss function, the neural network learns to generate images.
-
-## Example Training Code
-
-```python
-import math
-import os
-import numpy as np
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
-
-
-# =========================
-# 1. Basic settings
-# =========================
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-print(f"device = {device}")
-
-T = int(os.environ.get("DDPM_T", "200"))
-image_size = 16
-image_channels = 1
-image_dim = image_channels * image_size * image_size
-batch_size = int(os.environ.get("DDPM_BATCH_SIZE", "128"))
-train_steps = int(os.environ.get("DDPM_TRAIN_STEPS", "30000"))
-lr = float(os.environ.get("DDPM_LR", "3e-4"))
-sampling_noise_scale = float(os.environ.get("DDPM_SAMPLING_NOISE_SCALE", "0.5"))
-
-torch.manual_seed(42)
-np.random.seed(42)
-
-print(
-    f"config | T={T} | batch_size={batch_size} | train_steps={train_steps} | "
-    f"lr={lr} | sampling_noise_scale={sampling_noise_scale}"
-)
-
-
-# =========================
-# 2. beta, alpha, alpha_bar
-# =========================
-
-def make_beta_schedule(T, beta_start=1e-4, beta_end=0.01):
-    beta = torch.zeros(T + 1)
-    beta[1:] = torch.linspace(beta_start, beta_end, T)
-
-    alpha = torch.ones(T + 1)
-    alpha[1:] = 1.0 - beta[1:]
-
-    alpha_bar = torch.ones(T + 1)
-    for t in range(1, T + 1):
-        alpha_bar[t] = alpha_bar[t - 1] * alpha[t]
-
-    return beta.to(device), alpha.to(device), alpha_bar.to(device)
-
-
-beta, alpha, alpha_bar = make_beta_schedule(T)
-
-
-# =========================
-# 3. A single fixed 16x16x1 training image x_0
-# =========================
-
-def make_fixed_x0_image():
-    x0 = torch.full((1, image_channels, image_size, image_size), -1.0)
-
-    # A simple high-contrast grayscale pattern in [-1, 1].
-    x0[:, :, 2:14, 2:14] = -0.35
-    x0[:, :, 4:12, 4:12] = 0.25
-    x0[:, :, 6:10, 6:10] = 0.95
-    x0[:, :, 7:9, 2:14] = 1.0
-    x0[:, :, 2:14, 7:9] = 1.0
-
-    return x0.to(device)
-
-
-fixed_x0 = make_fixed_x0_image()
-
-
-def sample_x0(batch_size):
-    return fixed_x0.expand(batch_size, -1, -1, -1).clone()
-
-
-# =========================
-# 4. Forward noising q(x_t | x_0)
-# =========================
-
-def q_sample(x0, t, eps):
-    """
-    x_t = sqrt(alpha_bar_t) x_0 + sqrt(1-alpha_bar_t) eps
-
-    x0:  shape [B, 1, 16, 16]
-    t:   shape [B]
-    eps: shape [B, 1, 16, 16]
-    """
-    alpha_bar_t = alpha_bar[t].view(-1, 1, 1, 1)
-
-    xt = torch.sqrt(alpha_bar_t) * x0 + torch.sqrt(1.0 - alpha_bar_t) * eps
-    return xt
-
-
-# =========================
-# 5. Timestep embedding
-# =========================
-
-def timestep_embedding(t, dim=32):
-    """
-    Simple sinusoidal timestep embedding.
-
-    t: shape [B]
-    return: shape [B, dim]
-    """
-    half = dim // 2
-    freqs = torch.exp(
-        -math.log(10000) * torch.arange(half, device=device).float() / half
-    )
-
-    args = t.float().view(-1, 1) * freqs.view(1, -1)
-
-    emb = torch.cat([torch.sin(args), torch.cos(args)], dim=1)
-
-    if dim % 2 == 1:
-        emb = F.pad(emb, (0, 1))
-
-    return emb
-
-
-# =========================
-# 6. Neural network epsilon_theta(x_t, t)
-# =========================
-
-class EpsilonTheta(nn.Module):
-    def __init__(self, time_dim=64, hidden_dim=512):
-        super().__init__()
-        self.time_dim = time_dim
-
-        self.net = nn.Sequential(
-            nn.Linear(image_dim + time_dim, hidden_dim),
-            nn.SiLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.SiLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.SiLU(),
-            nn.Linear(hidden_dim, image_dim),
-        )
-
-    def forward(self, xt, t):
-        b = xt.shape[0]
-        xt_flat = xt.view(b, -1)
-        t_emb = timestep_embedding(t, self.time_dim)
-        inp = torch.cat([xt_flat, t_emb], dim=1)
-        eps_pred = self.net(inp)
-        return eps_pred.view(b, image_channels, image_size, image_size)
-
-
-model = EpsilonTheta().to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-
-
-# =========================
-# 7. Train epsilon prediction on noisy versions of one image
-# =========================
-
-loss_history = []
-
-for step in range(1, train_steps + 1):
-    x0 = sample_x0(batch_size)
-
-    # Random timestep t.
-    t = torch.randint(1, T + 1, (batch_size,), device=device)
-
-    # True noise epsilon.
-    eps = torch.randn_like(x0)
-
-    # Build x_t from the same fixed x_0 and fresh noise.
-    xt = q_sample(x0, t, eps)
-
-    # Predict epsilon.
-    eps_pred = model(xt, t)
-
-    # DDPM simple loss.
-    loss = F.mse_loss(eps_pred, eps)
-
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
-
-    loss_history.append(loss.item())
-
-    if step % 1000 == 0:
-        print(f"step {step:5d} | loss = {loss.item():.6f}")
-
-
-# =========================
-# 8. Reverse generation with the trained network
-# =========================
-
-@torch.no_grad()
-def p_sample(xt, t_int):
-    """
-    Sample from p_theta(x_{t-1} | x_t).
-
-    mu_theta(x_t,t)
-    =
-    1/sqrt(alpha_t) *
-    (x_t - beta_t / sqrt(1-alpha_bar_t) * eps_theta(x_t,t))
-    """
-    b = xt.shape[0]
-    t = torch.full((b,), t_int, device=device, dtype=torch.long)
-
-    eps_pred = model(xt, t)
-
-    beta_t = beta[t].view(-1, 1, 1, 1)
-    alpha_t = alpha[t].view(-1, 1, 1, 1)
-    alpha_bar_t = alpha_bar[t].view(-1, 1, 1, 1)
-
-    mean = (1.0 / torch.sqrt(alpha_t)) * (
-        xt - beta_t / torch.sqrt(1.0 - alpha_bar_t) * eps_pred
-    )
-
-    if t_int > 1:
-        # Simplified reverse variance: use beta_t.
-        z = torch.randn_like(xt)
-        sigma_t = torch.sqrt(beta_t) * sampling_noise_scale
-        x_prev = mean + sigma_t * z
-    else:
-        # No extra noise in the final step.
-        x_prev = mean
-
-    return x_prev
-
-
-@torch.no_grad()
-def sample_reverse(num_samples, start_from_noised_x0=True):
-    """
-    Denoise back to x_0.
-
-    If start_from_noised_x0 is True, start from q(x_T | x_0), which is the
-    restoration setting. Otherwise, start from pure N(0, 1) noise.
-    """
-    if start_from_noised_x0:
-        x0 = sample_x0(num_samples)
-        t = torch.full((num_samples,), T, device=device, dtype=torch.long)
-        xt = q_sample(x0, t, torch.randn_like(x0))
-    else:
-        xt = torch.randn(num_samples, image_channels, image_size, image_size, device=device)
-
-    trajectory = []
-    trajectory.append(xt.detach().cpu())
-
-    for t_int in range(T, 0, -1):
-        xt = p_sample(xt, t_int)
-        trajectory.append(xt.detach().cpu())
-
-    return xt.detach().cpu(), trajectory
-
-
-generated, trajectory = sample_reverse(16, start_from_noised_x0=True)
-
-
-# =========================
-# 9. Visualize results
-# =========================
-
-imgs_dir = os.path.join(os.path.dirname(__file__), "imgs")
-os.makedirs(imgs_dir, exist_ok=True)
-
-
-def to_numpy_img(x):
-    x = x.detach().cpu().squeeze().clamp(-1.0, 1.0)
-    return ((x + 1.0) / 2.0).numpy()
-
-
-target_img = to_numpy_img(fixed_x0[0])
-generated_img = to_numpy_img(generated[0])
-abs_error = np.abs(generated_img - target_img)
-reconstruction_mse = F.mse_loss(generated[0:1].to(device), fixed_x0).item()
-print(f"sample reconstruction mse = {reconstruction_mse:.6f}")
-
-plt.figure(figsize=(3, 3))
-plt.imshow(target_img, cmap="gray", vmin=0.0, vmax=1.0, interpolation="nearest")
-plt.axis("off")
-plt.tight_layout(pad=0)
-plt.savefig(os.path.join(imgs_dir, "target_x0_image.png"), dpi=200)
-plt.close()
-
-
-plt.figure(figsize=(8, 3))
-
-plt.subplot(1, 3, 1)
-plt.imshow(target_img, cmap="gray", vmin=0.0, vmax=1.0, interpolation="nearest")
-plt.title("target x0")
-plt.axis("off")
-
-plt.subplot(1, 3, 2)
-plt.imshow(generated_img, cmap="gray", vmin=0.0, vmax=1.0, interpolation="nearest")
-plt.title("generated x0")
-plt.axis("off")
-
-plt.subplot(1, 3, 3)
-plt.imshow(abs_error, cmap="magma", vmin=0.0, vmax=1.0, interpolation="nearest")
-plt.title("abs error")
-plt.axis("off")
-
-plt.tight_layout()
-plt.savefig(os.path.join(imgs_dir, "target_vs_generated_image.png"), dpi=200)
-plt.close()
-
-
-plt.figure(figsize=(6, 6))
-for i in range(16):
-    plt.subplot(4, 4, i + 1)
-    plt.imshow(to_numpy_img(generated[i]), cmap="gray", vmin=0.0, vmax=1.0, interpolation="nearest")
-    plt.axis("off")
-plt.tight_layout(pad=0.2)
-plt.savefig(os.path.join(imgs_dir, "generated_image_samples.png"), dpi=200)
-plt.close()
-
-
-plt.figure(figsize=(8, 4))
-plt.plot(loss_history)
-plt.title("Training loss")
-plt.xlabel("training step")
-plt.ylabel("MSE loss")
-plt.grid(True)
-plt.tight_layout()
-plt.savefig(os.path.join(imgs_dir, "training_loss.png"), dpi=200)
-plt.close()
-
-
-noise_steps = [0, T // 10, T // 4, T // 2, 3 * T // 4, T]
-plt.figure(figsize=(10, 2))
-for i, t_int in enumerate(noise_steps):
-    plt.subplot(1, len(noise_steps), i + 1)
-    if t_int == 0:
-        noisy = fixed_x0
-    else:
-        t = torch.full((1,), t_int, device=device, dtype=torch.long)
-        noisy = q_sample(fixed_x0, t, torch.randn_like(fixed_x0))
-    plt.imshow(to_numpy_img(noisy[0]), cmap="gray", vmin=0.0, vmax=1.0, interpolation="nearest")
-    plt.title(f"t={t_int}")
-    plt.axis("off")
-plt.tight_layout()
-plt.savefig(os.path.join(imgs_dir, "forward_noising_image.png"), dpi=200)
-plt.close()
-```
