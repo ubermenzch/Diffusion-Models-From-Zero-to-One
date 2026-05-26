@@ -1591,16 +1591,6 @@ L_{\mathrm{simple}}=\mathbb E_{\varepsilon\sim \mathcal N(0,\mathbf I),t\sim \te
 ```
 通过优化该损失函数，神经网络就学会生成图片了。
 
-## Notes / 说明
-
-本仓库是基于扩散模型相关资料整理的个人学习笔记与教学实现，主要围绕 DDPM 展开。除特别说明外，推导和解释均为个人重新整理与表述。
-
-This repository is a personal learning note and educational implementation based on diffusion models, especially DDPM. The derivations and explanations are rewritten in my own words unless otherwise noted.
-
-本项目的目标是帮助初学者理解扩散模型的核心思想：给数据加噪、训练神经网络学习去噪，并最终从随机噪声生成图像。
-
-The goal of this project is to help beginners understand the core idea of diffusion models: adding noise, learning to denoise, and generating images from random noise.
-
 ## References / 参考资料
 
 - Ho, J., Jain, A., & Abbeel, P. (2020). Denoising Diffusion Probabilistic Models.
@@ -1617,8 +1607,16 @@ The text, mathematical derivations, and explanations in this repository are lice
 
 The source code in this repository is released under the MIT License. See the `LICENSE` file for details.
 
-## Feedback and Corrections / 反馈与纠错
+## Notes / 说明
 
-本仓库是一个个人学习项目。如果你发现推导、解释或代码中存在错误、不清晰之处或不准确之处，欢迎提交 issue 或 pull request。任何反馈、纠正和建议都非常感谢。
+本仓库是基于扩散模型相关资料整理的个人学习笔记与教学实现，主要围绕 DDPM 展开。除特别说明外，推导和解释均为个人重新整理与表述。
 
-This repository is a personal learning project. If you find any mistakes, unclear explanations, or inaccuracies in the derivations, explanations, or code, please feel free to open an issue or submit a pull request. Any feedback, corrections, and suggestions are greatly appreciated.
+This repository is a personal learning note and educational implementation based on diffusion models, especially DDPM. The derivations and explanations are rewritten in my own words unless otherwise noted.
+
+本项目的目标是帮助初学者理解扩散模型的核心思想：给数据加噪、训练神经网络学习去噪，并最终从随机噪声生成图像。
+
+The goal of this project is to help beginners understand the core idea of diffusion models: adding noise to data, training a neural network to denoise, and finally generating images from random noise.
+
+由于本仓库仍是个人学习项目，内容中可能存在推导不严谨、解释不清晰或代码不完善之处。如果你发现任何问题，欢迎提交 issue 或 pull request。任何反馈、纠正和建议都非常感谢。
+
+Since this repository is still a personal learning project, there may be mistakes, unclear explanations, or imperfect code. If you find any issues, feel free to open an issue or submit a pull request. Any feedback, corrections, and suggestions are greatly appreciated.
