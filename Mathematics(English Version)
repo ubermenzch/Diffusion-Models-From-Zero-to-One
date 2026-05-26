@@ -1748,3 +1748,8 @@ L_{\mathrm{simple}}=\mathbb E_{\varepsilon\sim \mathcal N(0,\mathbf I),t\sim \te
 ```
 
 By optimizing this loss function, the neural network learns to generate images.
+
+## References
+
+- Ho, J., Jain, A., & Abbeel, P. (2020). Denoising Diffusion Probabilistic Models.
+- Sohl-Dickstein, J., Weiss, E., Maheswaranathan, N., & Ganguli, S. (2015). Deep Unsupervised Learning using Nonequilibrium Thermodynamics.
