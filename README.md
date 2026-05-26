@@ -1605,6 +1605,7 @@ The goal of this project is to help beginners understand the core idea of diffus
 
 - Ho, J., Jain, A., & Abbeel, P. (2020). Denoising Diffusion Probabilistic Models.
 - Sohl-Dickstein, J., Weiss, E., Maheswaranathan, N., & Ganguli, S. (2015). Deep Unsupervised Learning using Nonequilibrium Thermodynamics.
+- Kingma, D. P., & Welling, M. (2013/2014). Auto-Encoding Variational Bayes.
 
 ## License / 许可证
 
