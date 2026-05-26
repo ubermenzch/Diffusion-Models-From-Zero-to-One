@@ -1,5 +1,5 @@
 # Diffusion-Models-From-Zero-to-One
-
+This document was translated by AI.
 Understanding diffusion models from zero to one: starting from the noising formula of a single pixel channel, step by step, we understand how diffusion models learn to denoise and ultimately generate images from random noise.
 
 # Diffusion
