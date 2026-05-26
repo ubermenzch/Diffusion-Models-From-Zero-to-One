@@ -1749,7 +1749,19 @@ L_{\mathrm{simple}}=\mathbb E_{\varepsilon\sim \mathcal N(0,\mathbf I),t\sim \te
 
 通过优化该损失函数，神经网络就学会生成图片了。
 
+## Notes
+
+本仓库是基于 DDPM 论文和相关资料整理的个人学习笔记与教学实现。除特别说明外，推导和解释均为个人重新整理与表述。
+
+This repository is a personal learning note and educational implementation based on diffusion models, especially DDPM. The derivations and explanations are rewritten in my own words unless otherwise noted.
+
+The goal of this project is to help beginners understand the core idea of diffusion models: adding noise, learning to denoise, and generating images from random noise.
+
 ## References
 
 - Ho, J., Jain, A., & Abbeel, P. (2020). Denoising Diffusion Probabilistic Models.
 - Sohl-Dickstein, J., Weiss, E., Maheswaranathan, N., & Ganguli, S. (2015). Deep Unsupervised Learning using Nonequilibrium Thermodynamics.
+
+## License
+
+This project is released under the MIT License. See the `LICENSE` file for details.
