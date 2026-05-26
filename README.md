@@ -1764,4 +1764,6 @@ The goal of this project is to help beginners understand the core idea of diffus
 
 ## License
 
-This project is released under the MIT License. See the `LICENSE` file for details.
+The text, mathematical derivations, and explanations in this repository are licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0).
+
+The source code in this repository is released under the MIT License. See the `LICENSE` file for details.
