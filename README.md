@@ -9,7 +9,7 @@ x_1
 \sqrt{\beta_1}\epsilon_1
 ```
 
-其中$\epsilon_1$是噪声值，采样于标准高斯变量$\varepsilon\sim\mathcal N(0,1)$，$\beta_1$是人为设定的第1步加噪的噪声强度，一般要求$0<\beta<1$。写成随机变量形式则有
+其中$\epsilon_1$是噪声值，采样于标准高斯变量$\varepsilon\sim\mathcal N(0,1)$，$\beta_1$是人为设定的第1步加噪的噪声强度，一般要求$0<\beta<1$。写成随机变量形式
 
 ```math
 X_1
@@ -139,7 +139,21 @@ X_t
 \end{align*}
 ```
 
-可以看出，在给定$X_0=x_0$的条件下，随机变量$X_t$等价于由多个互相独立的高斯随机变量$\varepsilon_1,\varepsilon_2,\cdots,\varepsilon_t$表示的线性组合。因为独立高斯分布的线性组合依然是高斯分布，因此在给定$X_0=x_0$的条件下，$X_t$仍然服从高斯分布。对于任意两个随机变量X和Y，有$\operatorname{Var}(X + Y) = \operatorname{Var}(X) + \operatorname{Var}(Y) + 2\operatorname{Cov}(X, Y)$，则对任意$i\neq j$都有$\operatorname{Var}(\varepsilon_i + \varepsilon_j) = \operatorname{Var}(\varepsilon_i) + \operatorname{Var}(\varepsilon_j) + 2\operatorname{Cov}(\varepsilon_i, \varepsilon_j)=\operatorname{Var}(\varepsilon_i) + \operatorname{Var}(\varepsilon_j)$。则有
+可以看出，在给定$X_0=x_0$的条件下，随机变量$X_t$等价于由多个互相独立的高斯随机变量$\varepsilon_1,\varepsilon_2,\cdots,\varepsilon_t$表示的线性组合。因为独立高斯随机变量的线性组合仍为高斯变量，则$X_t\mid x_0$也是高斯变量。计算其均值和方差
+
+```math
+\begin{aligned}
+\mathbb E(X_t\mid x_0)
+&=
+\sqrt{\bar{\alpha}_t}x_0
++
+\sum_{i=1}^{t}
+\sqrt{\prod_{j=i+1}^{t} \alpha_j}
+\sqrt{1 - \alpha_i}
+\mathbb E(\varepsilon_i)
+\\&=\sqrt{\bar{\alpha}_t}x_0
+\end{aligned}
+```
 
 ```math
 \begin{aligned}
@@ -255,13 +269,19 @@ X_t= \sqrt{\bar\alpha_t}x_0
 
 条件概率密度函数为
 $q_t(x_t\mid x_0)=\mathcal{N}(x_t;\sqrt{\bar \alpha_t}x_{0},(1-\bar \alpha_t))$
-直接采样等价于一步步采样的本质含义不是说直接采样得到$x_t$和一步步采样得到$x_t$在值上相同，而是说在经过无穷次采样后，两种方式采样得到的$x_t$形成的分布相同。当我们选择合适的$\beta$序列使得$\lim_{t\to\infty}\bar \alpha_t=\prod_{i=1}^t \alpha_i=\prod_{i=1}^t (1-\beta_i)=0$时，则当T足够大时，就有
-$q_T(x_T\mid x_0)\approx\mathcal{N}(x_T;0,1)$。 
-生成过程
-当给定$x_0$后，后续所有时刻结果的随机变量$X_1,X_2,\cdots,X_T$的解析式都可以直接写出。如果我们可以构造一个神经网络$\theta$去学习根据$x_t$和$t$输出分布$\mathcal L(X_{t-1}\mid x_t)$，那么我们就可以根据这个分布逆转加噪过程。重复这个逆转过程最终就可以得到$X_0$的分布（训练所用的$x_0$的数据分布）。这里可能产生疑问：从$x_t$到$x_0$，这中间$x_{t-1}$依赖于$x_t$，整个路径都是随机的，我怎么能确保$x_T$生成确定的$x_0$呢？实际上，现在要介绍的生成过程还没有生成图片的能力，只有生成分布的能力，也就是说无法从$x_T$生成确定的$x_0$，但可以训练达到从$x_T$生成一批$x_0$，这批$x_0$的分布符合训练时候所使用的$x_0$的数据分布。介绍一下联合概率密度：对于两个连续的随机变量X,Y，当两随机变量互相独立时，他们的联合概率密度函数为
+
+直接采样等价于一步步采样的本质含义不是说直接采样得到$x_t$和一步步采样得到$x_t$在值上相同，而是说在经过无穷次采样后，两种方式采样得到$x_t$的统计分布是相同的。当$T\to\infty$时，$\bar\alpha_T\to 0$，则有$q_T(x_T\mid x_0)\approx\mathcal{N}(x_T;0,1)$。
+
+## 生成过程
+
+当给定$x_0$后，后续所有时刻结果的随机变量$X_1,X_2,\cdots,X_T$的解析式都可以直接写出。如果我们可以构造一个神经网络$\theta$去学习根据$x_t$和$t$输出噪声，进而逆向恢复原始图像，则可以实现图像生成。
+
+两个随机变量$X,Y$相互独立时，联合概率密度函数为
 $f_{X,Y}(x,y)=f_X(x)\cdot f_Y(y)$
-当两随机变量不互相独立时，他们的联合概率密度函数为
+
+当两随机变量不互相独立时，联合概率密度函数为
 $f_{X,Y}(x,y)=f_X(x)\cdot f_{Y\mid X}(y\mid x)=f_Y(y)\cdot f_{X\mid Y}(x\mid y)$
+
 在给定$x_0$后，将后续结果对应的随机变量联合起来
 
 ```math
@@ -275,7 +295,7 @@ X_T
 \end{pmatrix}
 ```
 
-也可以称$X_{1:T}$为随机向量。$X,Y$可以组成联合高斯（多元高斯分布）的充分必要条件是：对所有非零线性组合$aX+bY$，结果必须是高斯变量或退化高斯。其中非零线性组合即指$a,b$不同时为0；退化高斯指$\mathcal N(c,0),c\in \mathbb R$。由于$a=1,b=0$或$a=0,b=1$的线性组合也必须是高斯变量或退化高斯，因此这也要求$X,Y$都分别是高斯变量或退化高斯。同时联合高斯随机变量的条件分布仍然是高斯分布，即$X\mid Y=y$也一定服从高斯分布（在$Y=y$的条件下$X$服从高斯分布）。随机向量服从多元高斯可以记为
+也可以称$X_{1:T}$为随机向量。$X,Y$可以组成联合高斯（多元高斯分布）的充分必要条件是：对所有非零线性组合$aX+bY$，结果必须是高斯变量或退化高斯变量。联合高斯随机向量$(X,Y)^T$的概率密度函数为
 
 ```math
 \begin{pmatrix}
@@ -298,9 +318,9 @@ Y
 \end{pmatrix}
 ```
 
-其中$\mu$代表均值向量，$\Sigma$代表X,Y的协方差矩阵。假设某个生成过程正确一步步生成得到了$x_0$，采样值依次为$x_{T},\cdots,x_{1},x_0$。我们记生成过程的概率密度为
-$p_{t-1}(x_{t-1}\mid x_t)$
-则得到该采样序列的联合概率密度函数为
+其中$\mu$代表均值向量，$\Sigma$代表$X,Y$的协方差矩阵。
+
+假设某个生成过程正确一步步生成得到了$x_0$，采样值依次为$x_{T},\cdots,x_{1},x_0$。我们记生成过程在时刻$t-1$给定$x_t$的条件下的条件概率分布为$p_{t-1}(x_{t-1}\mid x_t)$，则得到该采样序列的联合概率密度函数为
 
 ```math
 \begin{aligned}
@@ -312,19 +332,24 @@ p_{0:T} (x_{0:T})&=p_T(x_T) p_{T-1}(x_{T-1} \mid x_T) p_{T-2}(x_{T-2} \mid x_{T}
 
 由于$X_T$的先验分布在DDPM标准中固定为标准高斯，即
 $p_T(x_T)=\mathcal{N}(x_T;0,1)$
-要注意，上面的路径$x_T,x_{T-1},\cdots,x_{0}$只是从$x_T$到$x_0$的其中一条路径，除此之外还包含无数条通往$x_0$的路径，所以最终生成$x_0$的概率密度（因为只是对联合变量中除$x_0$以外的随机变量进行了积分，所以积分结果依旧是$x_0$的边缘概率密度函数）应为
+
+要注意，上面的路径$x_T,x_{T-1},\cdots,x_{0}$只是从$x_T$到$x_0$的其中一条路径，除此之外还包含无数条通往$x_0$的路径，所以最终生成$x_0$的概率密度（边际分布）是对所有可能路径进行积分
+
 $p_0(x_0)=\int p_{0:T}(x_{1:T},x_0) \, dx_{1:T}$
-最直接的训练目标，就是最大化$p_0(x_0)$，为了简化运算，一般会转化为最大化$\log p_0(x_0)$。但直接优化$\log p_0(x_0)$是很困难的，因此我们引入已知的、容易处理的前向过程的分布$q(x_{1:T}\mid x_0)$并通过重要性采样来简化上式积分过程
+
+最直接的训练目标，就是最大化$p_0(x_0)$，为了简化运算，一般会转化为最大化$\log p_0(x_0)$。但直接优化$\log p_0(x_0)$是很困难的，因此我们引入已知的前向过程分布$q$来建立下界
 
 ```math
 \begin{aligned}
 p_0(x_0) &= \int p_{0:T}(x_{0:T}) \, dx_{1:T} 
 \\&= \int q_{1:T}(x_{1:T} \mid x_0) \cdot \frac{p_{0:T}(x_{1:T},x_0)}{q_{1:T}(x_{1:T} \mid x_0)} \, dx_{1:T}
-\\&=\mathbb{E}_{X_{1:T}\sim Q_{1:T}(\cdot\mid x_0)} \left[ \frac{p_{0:T}(x_0,X_{1:T})}{q_{1:T}(X_{1:T} \mid x_0)} \right],\quad p_{0:T}(x_0,X_{1:T})=p_T(X_T) \prod_{t=2}^T p_{t-1}(X_{t-1} \mid X_t)p_0(x_{0} \mid X_1)
+\\&=\mathbb{E}_{X_{1:T}\sim Q_{1:T}(\cdot\mid x_0)} \left[ \frac{p_{0:T}(x_0,X_{1:T})}{q_{1:T}(X_{1:T} \mid x_0)} \right],\quad p_{0:T}(x_0,X_{1:T})=p_T(X_T) \prod_{t=2}^T p_{t-1}(X_{t-1} \mid X_t)p_0(x_0\mid X_1)
 \end{aligned}
 ```
 
-此时$X_1,X_2,\cdots,X_T$表示服从前向条件分布的联合随机变量。设$X$为随机变量，$f(x)$为其概率密度函数；若将$Y\doteq X_1+X_2$代入概率密度函数$f(x)$就得到了另一个随机变量$f(Y)$。因此$p_{0:T}(x_0,X_{1:T}),q_{1:T}(X_{1:T} \mid x_0),p(X_T),p_{t-1}(X_{t-1} \mid X_t),p_0(x_{0} \mid X_1)$都是随机变量。其中，$X_{1:T}\sim Q_{1:T}(\cdot\mid x_0)$表示$X_1,X_{2},\cdots,X_T$服从联合条件分布$Q_{1:T}(\cdot\mid x_0)$；$X_{1:T}$中每个随机变量同时也都服从一个边缘条件分布$Q_t(\cdot\mid x_0)$。根据詹森不等式，对于任意随机变量$X$和凸函数$f$（下凸，图像像一个坑），有$f(\mathbb E[X])\le \mathbb E[f(X)]$；若$f$为凹函数（上凸，图像像一个山）则不等式方向反转，有$f(\mathbb E[X])\ge \mathbb E[f(X)]$。因为log是凹函数，则有$\log(\mathbb E[X])\ge \mathbb E[\log(X)]$。令
+此时$X_1,X_2,\cdots,X_T$表示服从前向条件分布的联合随机变量。设$X$为随机变量，$f(x)$为其概率密度函数；若将$Y\doteq X_1+X_2$代入概率密度函数$f(x)$就得到$f(Y)$，这实际上是对所有满足$X_1+X_2=Y$的$X_1,X_2$的联合密度求积分，即$f(Y)=\int f(x_1,y-x_1) dx_1$。
+
+令
 
 ```math
 Z
@@ -365,7 +390,7 @@ q_{1:T}(X_{1:T}\mid x_0)
 \end{aligned}
 ```
 
-我们称大于等于号右侧为证据下界
+最后一步不等式是根据詹森不等式（Jensen's inequality）得出的，因为$\log$是凹函数。我们称大于等于号右侧为证据下界（Evidence Lower BOund, ELBO）
 
 ```math
 \begin{aligned}
@@ -384,6 +409,9 @@ q_{1:T}(X_{1:T}\mid x_0)
 
 则有
 $\log p_0(x_0)\ge\mathcal{L}_{\mathrm{ELBO}}(x_0)$
+
+## 贝叶斯公式与条件概率
+
 简单介绍一下贝叶斯公式
 
 ```math
@@ -396,7 +424,7 @@ P(B)
 }
 ```
 
-当条件为B,C时有
+当条件为$B,C$时有
 
 ```math
 P(A\mid B,C)
@@ -408,7 +436,7 @@ P(B\mid C)
 },\quad(将C作为背景条件)
 ```
 
-若将B作为背景条件，则有
+若将$B$作为背景条件，则有
 
 ```math
 P(A\mid B,C)=\frac{
@@ -439,8 +467,10 @@ q_t(X_t\mid x_0)
 
 解释一下条件概率链式法则。设$A,B,C$为任意随机变量，则其联合概率密度为
 $q(A,B,C)=q(C)q(B\mid C)q(A\mid B,C)$
-本质上来说，即使这些随机变量之间是有依赖顺序的，比如A由B组成，B由C组成，但这不代表上式也只能按这个顺序展开。实际上，我们可以将上式以任何顺序将上式展开，比如
+
+本质上来说，即使这些随机变量之间是有依赖顺序的，比如$A$由$B$组成，$B$由$C$组成，但这不代表上式也只能按这个顺序展开。实际上，我们可以将上式以任意顺序拆解，例如
 $q(A,B,C)=q(A)q(B\mid A)q(C\mid A,B)$
+
 由条件概率的链式法则，我们可以将$q_{1:T}(X_{1:T}\mid x_0)$以任意顺序拆解，从而写成另一种形式
 
 ```math
@@ -462,6 +492,8 @@ q_{t-1}(X_{t-1}\mid X_t,x_0)
 \end{aligned}
 ```
 
+## ELBO的KL分解
+
 将$q_{1:T}(X_{1:T}\mid x_0)$代回$\mathcal{L}_{\mathrm{ELBO}}$得到
 
 ```math
@@ -480,10 +512,8 @@ q_{t-1}(X_{t-1}\mid X_t,x_0)
    \bigl[
      \log p_T(X_T)
      + \sum_{t=2}^T \log p_{t-1}(X_{t-1}\mid X_t)
-     + \log p_0(x_0\mid X_1)
-     \bigr. \\
+     + \log p_0(x_0\mid X_1) \\
 &\qquad
-   \bigl.
      - \log q_T(X_T\mid x_0)
      - \sum_{t=2}^{T} \log q_{t-1}(X_{t-1}\mid X_t,x_0)
    \bigr]
@@ -511,6 +541,9 @@ B&\doteq\mathbb{E}_{X_{1:T}\sim Q_{1:T}(\cdot\mid x_0)}
 
 则
 $\mathcal{L}_{\mathrm{ELBO}}=A+B+C$
+
+### A项的推导
+
 根据KL散度定义有
 
 ```math
@@ -549,6 +582,8 @@ A&=\mathbb{E}_{X_{1:T}\sim Q_{1:T}(\cdot\mid x_0)}\Bigl[\log p_T(X_T) - \log q_T
 & = -D_{\mathrm{KL}}\bigl( Q_T(\cdot\mid x_0) \,\|\, P_T \bigr),\quad P_T=\mathcal N(0,1)
 \end{aligned}
 ```
+
+### B项的推导
 
 对于B项
 
@@ -655,7 +690,9 @@ P_{t-1}(\cdot\mid X_t)
 \end{aligned}
 ```
 
-接着处理最C项，同理，调换积分顺序后，相当于可以只用$X_1\mid x_0$的边缘条件分布来求期望
+### C项的推导
+
+接着处理C项，同理，调换积分顺序后，相当于可以只用$X_1\mid x_0$的边缘条件分布来求期望
 
 ```math
 C=\mathbb{E}_{X_{1:T}\sim Q_{1:T}(\cdot\mid x_0)}
@@ -668,6 +705,8 @@ C=\mathbb{E}_{X_{1:T}\sim Q_{1:T}(\cdot\mid x_0)}
 \log p_0(x_0\mid X_1)
 \right]
 ```
+
+## ELBO的KL分解结果
 
 将上面得到的结果合并得到ELBO的KL分解
 
@@ -707,9 +746,11 @@ P_{t-1}(\cdot\mid X_t)
 
 由于有
 $\log p_0(x_0)\ge\mathcal{L}_{\mathrm{ELBO}}(x_0)$
+
 则有
 $-\log p_0(x_0)\le-\mathcal{L}_{\mathrm{ELBO}}(x_0)$
-定义
+
+定义变分下界（Variational Lower BOund, VLB）
 
 ```math
 \begin{aligned}
@@ -745,6 +786,9 @@ P_{t-1}(\cdot\mid X_t)
 \right]
 \end{aligned}
 ```
+
+则有
+$-\log p_0(x_0)\le\mathcal{L}_{\mathrm{VLB}}(x_0)$
 
 因此在训练中，通常通过最小化$\mathcal{L}_{\mathrm{VLB}}(x_0)$从而最大化$\log p_0(x_0)$的下界。我们记
 
@@ -793,6 +837,8 @@ L_T
 L_0
 ```
 
+## 后验分布的推导
+
 我们先看
 
 ```math
@@ -839,7 +885,7 @@ q_t(X_t\mid X_{t-1})
 q_{t-1}(X_{t-1}\mid x_0)
 ```
 
-由于
+其中$C$是归一化常数。由于
 
 ```math
 \begin{aligned}
@@ -997,746 +1043,58 @@ X_{t-1}^2
 \bar\alpha_{t-1}x_0^2
 ```
 
-其中只有$X_{t-1}$是自变量，则不含$X_{t-1}$的项都可以合并为一个常数项，则指数部分为
+其中只有$X_{t-1}$是自变量，则不含$X_{t-1}$的项都可以合并为一个常数项，则指数部分关于$X_{t-1}$的二次型系数为
 
 ```math
-\begin{aligned}
--\frac{\left(X_t-\sqrt{\alpha_t}X_{t-1}\right)^2}{2\beta_t}
--\frac{\left(X_{t-1}-\sqrt{\bar{\alpha}_{t-1}}x_0\right)^2}{2(1-\bar{\alpha}_{t-1})} &= -\frac{1}{2\beta_t}\bigl(\alpha_t X_{t-1}^2 - 2\sqrt{\alpha_t}X_t X_{t-1} + X_t^2\bigr) \\
-&\qquad -\frac{1}{2(1-\bar{\alpha}_{t-1})}\bigl(X_{t-1}^2 - 2\sqrt{\bar{\alpha}_{t-1}}x_0 X_{t-1} + \bar{\alpha}_{t-1}x_0^2\bigr) \\[4pt]
-&= -\frac{1}{2}\Biggl[
-\left(\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar{\alpha}_{t-1}}\right)X_{t-1}^2 \\
-&\qquad -2\left(\frac{\sqrt{\alpha_t}\,X_t}{\beta_t} + \frac{\sqrt{\bar{\alpha}_{t-1}}\,x_0}{1-\bar{\alpha}_{t-1}}\right)X_{t-1} + \left(\frac{X_t^2}{\beta_t} + \frac{\bar{\alpha}_{t-1}x_0^2}{1-\bar{\alpha}_{t-1}}\right)\Biggr]
-\\&= -\frac{1}{2}\Biggl[
-\left(\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar{\alpha}_{t-1}}\right)X_{t-1}^2-2\left(\frac{\sqrt{\alpha_t}\,X_t}{\beta_t} + \frac{\sqrt{\bar{\alpha}_{t-1}}\,x_0}{1-\bar{\alpha}_{t-1}}\right)X_{t-1} + \mathrm{const}\Biggr]
-\end{aligned}
+-\frac{\alpha_t}{2\beta_t} - \frac{1}{2(1-\bar\alpha_{t-1})}
+= -\frac{1}{2}\left(\frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar\alpha_{t-1}}\right)
+= -\frac{1}{2}\left(\frac{\alpha_t(1-\bar\alpha_{t-1})+\beta_t}{\beta_t(1-\bar\alpha_{t-1})}\right)
 ```
 
-因为在$X_0=x_0$的条件下$X_{t-1},X_t$可以建立多元高斯分布（在前面已经建立过联合分布$X_{1:T}$了），所以$X_{t-1}\mid X_t,x_0$也一定服从高斯分布（在$X_t=X_t,X_0=x_0$的条件下$X_{t-1}$服从高斯分布），则
+注意到$\alpha_t = 1 - \beta_t$，所以
 
 ```math
-\begin{aligned}
-q_{t-1}(X_{t-1}\mid X_t,x_0)&=\mathcal N\left(X_{t-1}; \tilde\mu_t(X_t,x_0), \tilde\beta_t \right)
-\\&=\frac{1}{\sqrt{2\pi\tilde\beta_t}}\mathrm{exp}\left(-\frac{
-\left(
-X_{t-1}-\tilde\mu_t(X_t,x_0)
-\right)^2
-}{
-2\tilde\beta_t
-}\right)
-\end{aligned}
+\alpha_t(1-\bar\alpha_{t-1})+\beta_t = (1-\beta_t)(1-\bar\alpha_{t-1})+\beta_t = 1-\bar\alpha_{t-1}-\beta_t(1-\bar\alpha_{t-1})+\beta_t
+\\= 1 - \bar\alpha_{t-1} + \beta_t\bar\alpha_{t-1} = 1 - \bar\alpha_{t-1}(1-\beta_t) = 1 - \bar\alpha_{t-1}\alpha_t = 1 - \bar\alpha_t
 ```
 
-这里之所以写$\tilde\beta_t$而不写$\tilde\beta_t(X_t,x_0)$，是因为后面推导会知道$\tilde\beta_t$是一个和条件$x_0,X_t$无关的常数。这里省略掉自变量只是为了简洁，不过写作$\tilde\beta_t(X_t,x_0)$也不影响推导结果。将指数部分展开得到
+因此二次项系数为$-\frac{1-\bar\alpha_t}{2\beta_t(1-\bar\alpha_{t-1})}$，进而可得后验分布的方差为
 
 ```math
--\frac{
-\left(
-X_{t-1}-\tilde\mu_t(X_t,x_0)
-\right)^2
-}{
-2\tilde\beta_t
-}=-\frac12
-\left[
-\frac{1}{\tilde\beta_t}X_{t-1}^2
--
-2\frac{\tilde\mu_t(X_t,x_0)}{\tilde\beta_t}X_{t-1}
-\right]
-+
-\mathrm{const}
+\sigma_q^2(t) = \frac{\beta_t(1-\bar\alpha_{t-1})}{1-\bar\alpha_t}
 ```
 
-这里$\tilde\beta_t$和前向过程中人为设定的$\beta$不同，这里的$\tilde\beta_t$表示$X_{t-1}\mid X_t,x_0$的方差。对比系数有
+一次项系数（关于$X_{t-1}$）为
 
 ```math
-\begin{aligned}
-\frac{1}{\tilde\beta_t}
-&=
-\frac{\alpha_t}{\beta_t}
-+
-\frac{1}{1-\bar\alpha_{t-1}}=
-\frac{
-\alpha_t(1-\bar\alpha_{t-1})+\beta_t
-}{
-\beta_t(1-\bar\alpha_{t-1})
-}
-\\&=\frac{\alpha_t-\alpha_t\bar\alpha_{t-1}+1-\alpha_t}{\beta_t(1-\bar\alpha_{t-1})}=\frac{1-\alpha_t\bar\alpha_{t-1}}{\beta_t(1-\bar\alpha_{t-1})},\quad(\beta_t=1-\alpha_t)
-\\&=\frac{
-1-\bar\alpha_t
-}{
-\beta_t(1-\bar\alpha_{t-1})
-},\quad(\bar\alpha_t=\alpha_t\bar\alpha_{t-1})
-\end{aligned}
+\frac{\sqrt{\alpha_t}X_t}{\beta_t} + \frac{\sqrt{\bar\alpha_{t-1}}x_0}{1-\bar\alpha_{t-1}}
+= \frac{\sqrt{\alpha_t}X_t(1-\bar\alpha_{t-1}) + \sqrt{\bar\alpha_{t-1}}x_0\beta_t}{\beta_t(1-\bar\alpha_{t-1})}
 ```
 
-进一步有
+根据高斯分布的标准形式，均值为
 
 ```math
-\tilde\beta_t
-=
-\frac{
-1-\bar\alpha_{t-1}
-}{
-1-\bar\alpha_t
-}
-\beta_t
+\mu_q(X_t,x_0) = \frac{1}{2}\sigma_q^2(t) \cdot 2 \cdot \frac{\sqrt{\alpha_t}X_t(1-\bar\alpha_{t-1}) + \sqrt{\bar\alpha_{t-1}}x_0\beta_t}{\beta_t(1-\bar\alpha_{t-1})}
+\\= \sigma_q^2(t) \cdot \frac{\sqrt{\alpha_t}X_t(1-\bar\alpha_{t-1}) + \sqrt{\bar\alpha_{t-1}}x_0\beta_t}{\beta_t(1-\bar\alpha_{t-1})}
+\\= \frac{\beta_t(1-\bar\alpha_{t-1})}{1-\bar\alpha_t} \cdot \frac{\sqrt{\alpha_t}X_t(1-\bar\alpha_{t-1}) + \sqrt{\bar\alpha_{t-1}}x_0\beta_t}{\beta_t(1-\bar\alpha_{t-1})}
+\\= \frac{\sqrt{\alpha_t}X_t(1-\bar\alpha_{t-1}) + \sqrt{\bar\alpha_{t-1}}x_0\beta_t}{1-\bar\alpha_t}
+\\= \frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})X_t + \sqrt{\bar\alpha_{t-1}}\beta_t x_0}{1-\bar\alpha_t}
 ```
 
-可以看到，$\tilde\beta_t$是一个和条件$x_0,X_t$无关的常数。再次对比系数有
+因此后验分布为
 
 ```math
-\begin{aligned}
-\frac{\tilde\mu_t(X_t,x_0)}{\tilde\beta_t}
-&=
-\frac{\sqrt{\alpha_t}}{\beta_t}X_t
-+
-\frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}x_0
-\\
-\tilde\mu_t(X_t,x_0)
-&=
-\tilde\beta_t
-\left(
-\frac{\sqrt{\alpha_t}}{\beta_t}X_t
-+
-\frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}x_0
-\right)
-\end{aligned}
-```
-
-将$\bar\beta_t$代入得到
-
-```math
-\begin{aligned}
-\tilde\mu_t(X_t,x_0)
-&=
-\frac{
-1-\bar\alpha_{t-1}
-}{
-1-\bar\alpha_t
-}
-\beta_t
-\left(
-\frac{\sqrt{\alpha_t}}{\beta_t}X_t
-+
-\frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}x_0
-\right)
-\\
-&=
-\frac{
-\sqrt{\alpha_t}(1-\bar\alpha_{t-1})
-}{
-1-\bar\alpha_t
-}
-X_t
-+
-\frac{
-\sqrt{\bar\alpha_{t-1}}\beta_t
-}{
-1-\bar\alpha_t
-}
-x_0
-\end{aligned}
-```
-
-则有
-
-```math
-\begin{aligned}
-q_{t-1}(X_{t-1}\mid X_t,x_0)&=\mathcal N\left(X_{t-1}; \frac{
-\sqrt{\alpha_t}(1-\bar\alpha_{t-1})
-}{
-1-\bar\alpha_t
-}
-X_t
-+
-\frac{
-\sqrt{\bar\alpha_{t-1}}\beta_t
-}{
-1-\bar\alpha_t
-}
-x_0, \frac{
-1-\bar\alpha_{t-1}
-}{
-1-\bar\alpha_t
-}
-\beta_t \right)
-\end{aligned}
-```
-
-因为
-
-```math
-\mathcal L (X_t\mid x_0)
-=
-\mathcal N
-\left(
-\sqrt{\bar{\alpha}_t}x_0,
-1-\bar{\alpha}_t
-\right)
-```
-
-即在$X_0=x_0$的条件下，有
-
-```math
-X_t= \sqrt{\bar\alpha_t}x_0
-+
-\sqrt{1-\bar\alpha_t}\bar\varepsilon_t,\quad \bar\varepsilon_t\sim \mathcal  N(0,1)
-```
-
-进一步整理得到
-
-```math
-x_0
-=
-\frac{
-X_t-\sqrt{1-\bar\alpha_t}\varepsilon_t
-}{
-\sqrt{\bar\alpha_t}
-}
-```
-
-这里可能会让人产生疑问：为什么两个随机变量的运算最终得到了一个常数$x_0$？其实这是因为$X_t$和$\varepsilon_t$并不是两个独立的随机变量，$X_t$是由$x_0$和$\varepsilon_t$构造而成的随机变量，因此在$X_t$和$\varepsilon_t$的运算过程中，随机的部分被抵消掉了，只剩下了常数。代入$\tilde\mu_t$得到
-
-```math
-\begin{aligned}
-\tilde\mu_t(X_t,x_0)
-&=
-\frac{
-\sqrt{\bar\alpha_{t-1}}\beta_t
-}{
-1-\bar\alpha_t
-}
-\cdot
-\frac{
-X_t-\sqrt{1-\bar\alpha_t}\varepsilon_t
-}{
-\sqrt{\bar\alpha_t}
-}
-+
-\frac{
-\sqrt{\alpha_t}(1-\bar\alpha_{t-1})
-}{
-1-\bar\alpha_t
-}
-X_t
-\\
-&=
-\frac{1}{\sqrt{\alpha_t}}
-\left(
-X_t
--
-\frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\varepsilon_t
-\right)
-\end{aligned}
-```
-
-这里即使没有出现$x_0$，但由于$x_0$是隐含于$X_t$中的，因此为了形式统一，依旧写在自变量之中。于是我们就可以得到
-
-```math
-\begin{aligned}
-q_{t-1}(X_{t-1}\mid X_t,x_0)&=\mathcal N\left(X_{t-1}; \frac{1}{\sqrt{\alpha_t}}
-\left(
-X_t
--
-\frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\varepsilon_t
-\right), \frac{
-1-\bar\alpha_{t-1}
-}{
-1-\bar\alpha_t
-}
-\beta_t \right)
-\end{aligned}
-```
-
- 在训练时，我们知道$x_0$和采样噪声$\varepsilon_t$，因此可以计算真实后验$q_{t-1}(X_{t-1}\mid X_t,x_0)$；但在生成时，我们只有$X_t$（通过$X_T$可以确定$X_{T-1}$，以此类推最后可以得到$X_0$），没有$x_0$，也不知道真实噪声$\varepsilon_t$。因此需要用神经网络定义的$p_{t-1}(X_{t-1}\mid X_t)$去拟合训练时可计算的真实后验$q_{t-1}(x_{t-1}\mid X_t,x_0)$。 而这个拟合过程我们唯一所需要知道的就是$\varepsilon_t$了，因此只需要让神经网络$\theta$学习噪声$\varepsilon_\theta(X_t,t)$即可，于是我们可以得到
-
-```math
-\begin{aligned}
-p_{t-1}(X_{t-1}\mid X_t)&=\mathcal{N}\left( X_{t-1};
-\mu_\theta(X_t,t), \frac{
-1-\bar\alpha_{t-1}
-}{
-1-\bar\alpha_t
-}
-\beta_t \right)
-\\\mu_\theta(X_t,t)&=\frac{1}{\sqrt{\alpha_t}}
-\left(
-X_t
--
-\frac{\beta_t}{\sqrt{1-\bar\alpha_t}}
-\varepsilon_\theta(X_t,t)
-\right)
-\end{aligned}
-```
-
-但在实践中，我们往往不将方差局限
-
-```math
-\frac{
-1-\bar\alpha_{t-1}
-}{
-1-\bar\alpha_t
-}
-\beta_t
-```
-
-，而是将其设定为一个可以自由选择的时间常数，因此为了保持更一般的形式，将方差写作$\sigma^2_t$
-
-```math
-p_{t-1}(X_{t-1}\mid X_t)=\mathcal{N}\left( X_{t-1};
-\mu_\theta(X_t,t), \sigma^2_t\right)
-```
-
-两个高斯分布的KL散度为
-
-```math
-\begin{align*}
-&\quad D_{\mathrm{KL}}\left(\mathcal{N}(\mu_1,\sigma_1^2) \,\|\, \mathcal{N}(\mu_2,\sigma_2^2)\right) \\
-&= \int_{-\infty}^{\infty} 
-\frac{1}{\sqrt{2\pi}\sigma_1} \exp\!\left(-\frac{(x-\mu_1)^2}{2\sigma_1^2}\right) 
-\log\frac{
-\frac{1}{\sqrt{2\pi}\sigma_1} \exp\!\left(-\frac{(x-\mu_1)^2}{2\sigma_1^2}\right)
-}{
-\frac{1}{\sqrt{2\pi}\sigma_2} \exp\!\left(-\frac{(x-\mu_2)^2}{2\sigma_2^2}\right)
-} \,dx \\
-&= \int_{-\infty}^{\infty} 
-\frac{1}{\sqrt{2\pi}\sigma_1} \exp\!\left(-\frac{(x-\mu_1)^2}{2\sigma_1^2}\right) 
-\left[ \log\frac{\sigma_2}{\sigma_1} - \frac{(x-\mu_1)^2}{2\sigma_1^2} + \frac{(x-\mu_2)^2}{2\sigma_2^2} \right] dx \\
-&= \log\frac{\sigma_2}{\sigma_1} \underbrace{\int p(x)dx}_{=1}
-- \frac{1}{2\sigma_1^2} \underbrace{\int (x-\mu_1)^2 p(x)dx}_{=\sigma_1^2}
-+ \frac{1}{2\sigma_2^2} \underbrace{\int (x-\mu_2)^2 p(x)dx}_{\mathbb{E}_p[(x-\mu_2)^2]} \\
-&= \log\frac{\sigma_2}{\sigma_1} - \frac12 
-+ \frac{1}{2\sigma_2^2} \mathbb{E}_p\big[(x-\mu_2)^2\big] \\
-&= \log\frac{\sigma_2}{\sigma_1} - \frac12 
-+ \frac{1}{2\sigma_2^2} \Big( \mathbb{E}_p\big[((x-\mu_1)+(\mu_1-\mu_2))^2\big] \Big) \\
-&= \log\frac{\sigma_2}{\sigma_1} - \frac12 
-+ \frac{1}{2\sigma_2^2} \Big( \mathbb{E}_p[(x-\mu_1)^2] + 2(\mu_1-\mu_2)\underbrace{\mathbb{E}_p[x-\mu_1]}_{=0} + (\mu_1-\mu_2)^2 \Big) \\
-&= \log\frac{\sigma_2}{\sigma_1} - \frac12 
-+ \frac{1}{2\sigma_2^2} \big( \sigma_1^2 + (\mu_1-\mu_2)^2 \big) \\
-&= \log\frac{\sigma_2}{\sigma_1} + \frac{\sigma_1^2 + (\mu_1-\mu_2)^2}{2\sigma_2^2} - \frac12
-\end{align*}
-```
-
-此时我们终于可以写出$L_{t-1}$中KL散度的解析式了
-
-```math
-\begin{aligned}
-D_{\mathrm{KL}}
-\left(
-Q_{t-1}(\cdot\mid X_t,x_0)
-\|
-P_{t-1}(\cdot\mid X_t)
-\right)
-&=
-\log
-\frac{\sigma_t}{\sqrt{\tilde\beta_t}}
-+
-\frac{
-\tilde\beta_t
-+
-\left(
-\tilde\mu_t(X_t,x_0)-\mu_\theta(X_t,t)
-\right)^2
-}{
-2\sigma_t^2
-}
--\frac12
-\end{aligned}
+q_{t-1}(X_{t-1}\mid X_t,x_0) = \mathcal N\left(X_{t-1}; \mu_q(X_t,x_0), \sigma_q^2(t)\right)
 ```
 
 其中
 
 ```math
-\begin{aligned}
-\tilde\mu_t(X_t,x_0)-\mu_\theta(X_t,t)
-&=
-\frac{1}{\sqrt{\alpha_t}}
-\left(
--\frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\varepsilon_t
-+
-\frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\varepsilon_\theta(X_t,t)
-\right)
-\\
-&=
-\frac{\beta_t}{
-\sqrt{\alpha_t}\sqrt{1-\bar\alpha_t}
-}
-\left(
-\varepsilon_\theta(X_t,t)-\varepsilon_t
-\right)
-\end{aligned}
+\mu_q(X_t,x_0) = \frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})X_t + \sqrt{\bar\alpha_{t-1}}\beta_t x_0}{1-\bar\alpha_t}
 ```
-
-因此
 
 ```math
-\left(
-\tilde\mu_t(X_t,x_0)-\mu_\theta(X_t,t)
-\right)^2
-=
-\frac{
-\beta_t^2
-}{
-\alpha_t(1-\bar\alpha_t)
-}
-\left(
-\varepsilon_t-\varepsilon_\theta(X_t,t)
-\right)^2
+\sigma_q^2(t) = \frac{\beta_t(1-\bar\alpha_{t-1})}{1-\bar\alpha_t}
 ```
 
-则
-
-```math
-\frac{
-\left(
-\tilde\mu_t(X_t,x_0)-\mu_\theta(X_t,t)
-\right)^2
-}{
-2\sigma_t^2
-}
-=
-\frac{
-\beta_t^2
-}{
-2\sigma_t^2\alpha_t(1-\bar\alpha_t)
-}
-\left(
-\varepsilon_t-\varepsilon_\theta(X_t,t)
-\right)^2
-```
-
-则
-
-```math
-\begin{aligned}
-L_{t-1}
-&=
-\mathbb E_{X_t\sim Q_t(\cdot\mid x_0)}
-\left[
-D_{\mathrm{KL}}
-\left(
-Q_{t-1}(\cdot\mid X_t,x_0)
-\|
-P_{t-1}(\cdot\mid X_t)
-\right)
-\right]
-\\
-&=
-\mathbb E_{\varepsilon_t\sim\mathcal N(0,1)}
-\left[
-\frac{
-\beta_t^2
-}{
-2\sigma_t^2\alpha_t(1-\bar\alpha_t)
-}
-\left(
-\varepsilon_t-\varepsilon_\theta(X_t,t)
-\right)^2
-\right]
-+
-C_t ,\quad C_t
-=
-\log
-\frac{\sigma_t}{\sqrt{\tilde\beta_t}}
-+
-\frac{\tilde\beta_t}{2\sigma_t^2}
--\frac12
-\end{aligned}
-```
-
-因为$X_t$由$\varepsilon_t$和$x_0$决定，因此期望下标写明了对$\varepsilon_t$求期望，就不需要再写$X_t\sim Q_t(\cdot\mid x_0)$了。在优化过程中常数可以省略，于是$L_{t-1}$等价于
-
-```math
-L_{t-1}'=\mathbb E_{\varepsilon_t\sim\mathcal N(0,1)}
-\left[
-\frac{
-\beta_t^2
-}{
-2\sigma_t^2\alpha_t(1-\bar\alpha_t)
-}
-\left(
-\varepsilon_t-\varepsilon_\theta(X_t,t)
-\right)^2
-\right]
-```
-
-将$X_t= \sqrt{\bar\alpha_t}x_0+\sqrt{1-\bar\alpha_t}\varepsilon_t$代入得到
-
-```math
-L_{t-1}'=\mathbb E_{\varepsilon_t\sim\mathcal N(0,1)}
-\left[
-\frac{
-\beta_t^2
-}{
-2\sigma_t^2\alpha_t(1-\bar\alpha_t)
-}
-\left(
-\varepsilon_t-\varepsilon_\theta(\sqrt{\bar\alpha_t}x_0+\sqrt{1-\bar\alpha_t}\varepsilon_t,t)
-\right)^2
-\right]
-```
-
-我们继续看$\mathcal L_{\mathrm{VLB}}$中的
-
-```math
-L_T=D_{\mathrm{KL}}
-\left(
-Q_T(\cdot\mid x_0)
-\|
-P_T,\quad P_T=\mathcal L(X_T)
-\right)
-```
-
-。其中
-
-```math
-\begin{aligned}
-P_T&=\mathcal N(0,1)
-\\Q_T(\cdot\mid x_0)
-&=
-\mathcal N
-\left(
-\sqrt{\bar\alpha_T}x_0,
-1-\bar\alpha_T
-\right)
-\end{aligned}
-```
-
-由于两个分布都可以直接计算，因此
-
-```math
-D_{\mathrm{KL}}
-\left(
-Q_T(\cdot\mid x_0)
-\|
-P_T
-\right)
-```
-
-可以直接计算，和神经网络无关（中间项是因为有无法直接计算的$p_{t-1}$所以才要引入神经网络），因此在优化过程可以忽略。继续看$\mathcal L_{\mathrm{VLB}}$中的
-
-```math
-L_0=-\mathbb{E}_{X_1\sim Q_1(\cdot\mid x_0)}
-\left[
-\log p_0(x_0\mid X_1)
-\right]
-```
-
-。其中
-
-```math
-\begin{aligned}
-p_0(x_0\mid x_1)&=\mathcal{N}\left( x_0;\mu_\theta(x_1, 1), \sigma^2_1 \right)
-\\\mu_\theta(X_1,1)&=\frac{1}{\sqrt{\alpha_1}}
-\left(
-X_1
--
-\frac{\beta_1}{\sqrt{1-\bar\alpha_1}}
-\varepsilon_\theta(X_1,1)
-\right)
-\end{aligned}
-```
-
-将
-
-```math
-X_1
-=
-\sqrt{\alpha_1}x_0
-+
-\sqrt{\beta_1}\varepsilon_1
-```
-
-代入得到
-
-```math
-\begin{aligned}
-\mu_\theta(X_1,1)&=\frac{1}{\sqrt{\alpha_1}}
-\left(
-\sqrt{\alpha_1}x_0
-+
-\sqrt{\beta_1}\varepsilon_1
--
-\frac{\beta_1}{\sqrt{1-\bar\alpha_1}}
-\varepsilon_\theta(\sqrt{\alpha_1}x_0
-+
-\sqrt{\beta_1}\varepsilon_1,1)
-\right)
-\
-\\&=x_0+\sqrt{\frac{\beta_1}{\alpha_1}}\varepsilon_1-\frac{\beta_1}{\sqrt{\alpha_1-\alpha_1^2}}\varepsilon_\theta(\sqrt{\alpha_1}x_0
-+
-\sqrt{\beta_1}\varepsilon_1,1)
-\\&=x_0+\sqrt{\frac{\beta_1}{\alpha_1}}\left(\varepsilon_1-\frac{\sqrt{\beta_1}}{\sqrt{1-\alpha_1}}\varepsilon_\theta(\sqrt{\alpha_1}x_0
-+
-\sqrt{\beta_1}\varepsilon_1,1)\right)
-\\&=x_0+\sqrt{\frac{\beta_1}{\alpha_1}}\left(\varepsilon_1-\varepsilon_\theta(\sqrt{\alpha_1}x_0
-+
-\sqrt{\beta_1}\varepsilon_1,1)\right)\quad (\frac{\sqrt{\beta_1}}{\sqrt{1-\alpha_1}}=1)
-\end{aligned}
-```
-
-则
-
-```math
-\begin{aligned}
-L_0(x_0)
-&= \mathbb{E}_{X_1\sim Q_1(\cdot\mid x_0)}
-   \left[ -\log \mathcal{N}\!\left( x_0; \mu_\theta(X_1,1), \sigma_1^2 \right) \right] \\[4pt]
-&= \mathbb{E}_{X_1\sim Q_1(\cdot\mid x_0)}
-   \left[ -\log \left( \frac{1}{\sqrt{2\pi\sigma_1^2}}
-          \exp\!\left( -\frac{(x_0-\mu_\theta(X_1,1))^2}{2\sigma_1^2} \right) \right) \right] \\[4pt]
-&= \mathbb{E}_{X_1\sim Q_1(\cdot\mid x_0)}
-   \left[ -\log \frac{1}{\sqrt{2\pi\sigma_1^2}}
-          - \log \exp\!\left( -\frac{(x_0-\mu_\theta(X_1,1))^2}{2\sigma_1^2} \right) \right] \\[4pt]
-&= \mathbb{E}_{X_1\sim Q_1(\cdot\mid x_0)}
-   \left[ \frac{1}{2}\log(2\pi\sigma_1^2)
-          - \left( -\frac{(x_0-\mu_\theta(X_1,1))^2}{2\sigma_1^2} \right) \right] \\[4pt]
-&= \mathbb{E}_{X_1\sim Q_1(\cdot\mid x_0)}
-   \left[ \frac{1}{2}\log(2\pi\sigma_1^2)
-          + \frac{(x_0-\mu_\theta(X_1,1))^2}{2\sigma_1^2} \right]\\[4pt]
-&= \mathbb{E}_{\varepsilon_1\sim \mathcal N(0,1)}
-   \left[ \frac{1}{2}\log(2\pi\sigma_1^2)
-          + \frac{\left(\sqrt{\frac{\beta_1}{\alpha_1}}\left(\varepsilon_1-\varepsilon_\theta(\sqrt{\alpha_1}x_0
-+
-\sqrt{\beta_1}\varepsilon_1,1)\right)\right)^2}{2\sigma_1^2} \right]\\[4pt]
-&= \mathbb{E}_{\varepsilon_1\sim \mathcal N(0,1)}
-   \left[ \frac{1}{2}\log(2\pi\sigma_1^2)
-          + \frac{\beta_1\left(\varepsilon_1-\varepsilon_\theta(\sqrt{\alpha_1}x_0
-+
-\sqrt{\beta_1}\varepsilon_1,1)\right)^2}{2\alpha_1\sigma_1^2} \right]
-\end{aligned}
-```
-
-其中，在机器学习或数学领域， $\log$都默认指以$e$为底数的$\log$函数，所以才有$\log\exp\!\left( -\frac{(x_0-\mu_\theta(X_1,1))^2}{2\sigma_1^2} \right)=\! -\frac{(x_0-\mu_\theta(X_1,1))^2}{2\sigma_1^2}$。优化过程中可以忽略常数，则$L_0$等价于
-
-```math
-\begin{aligned}
-L_0'
-&=
-\mathbb E_{\varepsilon_1\sim\mathcal N(0,1)}
-\left[\frac{\beta_1\left(\varepsilon_1-\varepsilon_\theta(\sqrt{\alpha_1}x_0
-+
-\sqrt{\beta_1}\varepsilon_1,1)\right)^2}{2\alpha_1\sigma_1^2}
-\right]
-\\&=\mathbb E_{\varepsilon_1\sim\mathcal N(0,1)}
-\left[\frac{\beta_1\left(\varepsilon_1-\varepsilon_\theta(\sqrt{\bar\alpha_1}x_0
-+
-\sqrt{1-\bar\alpha_1}\varepsilon_1,1)\right)^2}{2\alpha_1\sigma_1^2}
-\right],\quad \alpha_t= 1-\beta_t,\, \bar{\alpha}_t = \prod_{i=1}^t \alpha_i
-\end{aligned}
-```
-
-因此优化完整的$\mathcal L_{\mathrm{VLB}}$等价于优化
-
-```math
-\begin{aligned}
-\mathcal L_{\mathrm{VLB}}&=L_0'+\sum_{t=2}^{T}L_{t-1}'
-\\&=\mathbb E_{\varepsilon_1\sim\mathcal N(0,1)}
-\left[\frac{\beta_1}{2\alpha_1\sigma_1^2}\left(\varepsilon_1-\varepsilon_\theta(\sqrt{\bar\alpha_1}x_0
-+
-\sqrt{1-\bar\alpha_1}\varepsilon_1,1)\right)^2\right]
-\\&+\sum_{t=2}^T \mathbb E_{\varepsilon_t\sim\mathcal N(0,1)}
-\left[
-\frac{
-\beta_t^2
-}{
-2\sigma_t^2\alpha_t(1-\bar\alpha_t)
-}
-\left(
-\varepsilon_t-\varepsilon_\theta(\sqrt{\bar\alpha_t}x_0+\sqrt{1-\bar\alpha_t}\varepsilon_t,t)
-\right)^2
-\right]
-\end{aligned}
-```
-
-但在DDPM的实践中发现，若将$L_t'$中的复杂权重去掉，将$L_0'$也统一起来，则只优化如下简化后的损失函数，模型的样本生成质量会更高
-
-```math
-L_{\mathrm{simple}}
-=\sum_{t=1}^T
-\mathbb E_{\varepsilon\sim \mathcal N(0,1)}
-\left[
-\left(
-\varepsilon-\varepsilon_\theta(\sqrt{\bar\alpha_t}x_0
-+
-\sqrt{1-\bar\alpha_t}\varepsilon,t)
-\right)^2
-\right]
-```
-
-加入一个常数$\frac{1}{T}$不影响优化
-
-```math
-\begin{aligned}
-L_{\mathrm{simple}}
-&=\sum_{t=1}^T\frac{1}{T}
-\mathbb E_{\varepsilon\sim \mathcal N(0,1)}
-\left[
-\left(
-\varepsilon-\varepsilon_\theta(\sqrt{\bar\alpha_t}x_0
-+
-\sqrt{1-\bar\alpha_t}\varepsilon,t)
-\right)^2
-\right]
-\\
-&=\mathbb E_{t\sim \text{Uniform}(\{1,\cdots,T\})}\left[\mathbb E_{\varepsilon\sim \mathcal N(0,1)}
-\left[
-\left(
-\varepsilon-\varepsilon_\theta(\sqrt{\bar\alpha_t}x_0
-+
-\sqrt{1-\bar\alpha_t}\varepsilon,t)
-\right)^2
-\right]\right]
-\\
-&=\mathbb E_{\varepsilon\sim \mathcal N(0,1),t\sim \text{Uniform}(\{1,\cdots,T\})}
-\left[
-\left(
-\varepsilon-\varepsilon_\theta(\sqrt{\bar\alpha_t}x_0
-+
-\sqrt{1-\bar\alpha_t}\varepsilon,t)
-\right)^2
-\right]
-\end{aligned}
-```
-
-其中$\text{Uniform}(\{1,\cdots,T\})$表示均匀分布。 当训练集中只有$x_0$时，训练数据分布为$\mathcal N(x_0,0)$。我们随机采样$t、\epsilon$，计算得到
-
-```math
-x_t=\sqrt{\bar\alpha_t}x_0
-+
-\sqrt{1-\bar\alpha_t}\epsilon
-```
-
-，将$x_t,t$输入神经网络$\theta$得到输出$\epsilon_\theta$，此时我们就具备了进行随机梯度下降所需的所有数据，重复这个过程，直到训练结束。在生成阶段，输入$x_t,t$给神经网络$\theta$，得到输出$\epsilon_\theta$，接着由
-
-```math
-\mu_\theta(x_t,t)=\frac{1}{\sqrt{\alpha_t}}
-\left(
-x_t
--
-\frac{\beta_t}{\sqrt{1-\bar\alpha_t}}
-\varepsilon_\theta(x_t,t)
-\right)
-```
-
-可以计算得到$\mu_\theta$，最后根据
-
-```math
-p_{t-1}(x_{t-1}\mid x_t)=\mathcal{N}\left( x_{t-1};
-\mu_\theta(x_t,t), \sigma^2_t\right)
-```
-
-可以得到生成$x_{t-1}$的分布，重复这个过程，最终可以得到生成$x_0$的分布。由于$x_0$的分布是$\mathcal N(x_0,0)$，因此由神经网络给出的生成$x_0$的分布也大概会是$\mathcal N(x_0,0)$。假如现在有一张64*64*3的图片，将其展平为$x_0\in \mathbb R^{64*64*3}$，同时将$\varepsilon$也扩展为$\varepsilon\in \mathbb R^{64*64*3}$，则损失函数就变为了
-
-```math
-L_{\mathrm{simple}}=\mathbb E_{\varepsilon\sim \mathcal N(0,\mathbf I),t\sim \text{Uniform}(\{1,\cdots,T\})}
-\left[
-\|
-\varepsilon-\varepsilon_\theta(\sqrt{\bar\alpha_t}x_0
-+
-\sqrt{1-\bar\alpha_t}\varepsilon,t)
-\|^2
-\right]
-```
-
-通过优化该损失函数，神经网络就学会生成图片了。
+这是前向过程在给定$X_t$和$x_0$时的后验分布，是一个高斯分布，其参数完全由前向过程的参数（$\alpha_t, \beta_t, \bar\alpha_t$等）确定。
