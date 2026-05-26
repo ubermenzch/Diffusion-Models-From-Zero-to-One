@@ -1748,3 +1748,8 @@ L_{\mathrm{simple}}=\mathbb E_{\varepsilon\sim \mathcal N(0,\mathbf I),t\sim \te
 ```
 
 通过优化该损失函数，神经网络就学会生成图片了。
+
+## References
+
+- Ho, J., Jain, A., & Abbeel, P. (2020). Denoising Diffusion Probabilistic Models.
+- Sohl-Dickstein, J., Weiss, E., Maheswaranathan, N., & Ganguli, S. (2015). Deep Unsupervised Learning using Nonequilibrium Thermodynamics.
